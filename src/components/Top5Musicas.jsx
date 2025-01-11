@@ -2,27 +2,35 @@ import React, { useEffect, useState } from 'react';
 
 const Top5Musicas = () => {
     const [songs, setSongs] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchTop5 = async () => {
-            const response = await fetch('http://localhost:8001/api/top5');
-            const data = await response.json();
-            setSongs(data);
+            setLoading(true);
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/top5');
+                const result = await response.json();
+
+                setSongs(result.data || []);
+                console.log("API Response:", result);
+            } catch (error) {
+                console.error("Failed to fetch top 5 songs:", error);
+                setSongs([]);
+            } finally {
+                setLoading(false);
+            }
         };
+
 
         fetchTop5();
     }, []);
 
+
+
     return (
         <div>
             <h3 className="section-title">Ranking Atual</h3>
-            {songs.length === 0 ? (
-                <div className="empty-state">
-                    <div className="empty-state-icon">🎵</div>
-                    <div className="empty-state-text">Nenhuma música cadastrada ainda</div>
-                    <div className="empty-state-subtext">Seja o primeiro a sugerir uma música usando o formulário acima!</div>
-                </div>
-            ) : (
+            {Array.isArray(songs) && songs.length > 0 ? (
                 songs.map((song, index) => (
                     <a
                         key={song.youtube_id}
@@ -41,9 +49,16 @@ const Top5Musicas = () => {
                         </div>
                     </a>
                 ))
+            ) : (
+                <div className="empty-state">
+                    <div className="empty-state-icon">🎵</div>
+                    <div className="empty-state-text">Nenhuma música cadastrada ainda</div>
+                    <div className="empty-state-subtext">Seja o primeiro a sugerir uma música usando o formulário acima!</div>
+                </div>
             )}
         </div>
     );
+
 };
 
 export default Top5Musicas;
